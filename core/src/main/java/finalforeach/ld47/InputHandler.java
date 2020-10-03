@@ -17,7 +17,11 @@ public class InputHandler implements InputProcessor
 	public boolean keyDown(int keycode) {
 		if(Keys.F5 == keycode) 
 		{
+			Game.tileMap.generateLevel();
 			Game.tileMap.update();
+			Game.player.x = Game.tileMap.spawnLoc.x;
+			Game.player.y = Game.tileMap.spawnLoc.y;
+			Game.player.updateBoundingBox();
 		}
 		return false;
 	}

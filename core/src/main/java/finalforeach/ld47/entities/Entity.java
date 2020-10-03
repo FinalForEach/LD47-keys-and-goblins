@@ -71,8 +71,8 @@ public class Entity
 			float dx2 = t2.bb.getCenterX() - bb.getCenterX();
 			float dy2 = t2.bb.getCenterY() - bb.getCenterY();
 
-			float s1 = dx1 + dy1;
-			float s2 = dx2 + dy2;
+			float s1 = Math.abs(dx1) + Math.abs(dy1);
+			float s2 = Math.abs(dx2) + Math.abs(dy2);
 			if(s1 < s2) return -1;
 			if(s1 > s2) return 1;
 			return 0;

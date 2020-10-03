@@ -2,7 +2,6 @@ package finalforeach.ld47;
 
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.Input.Keys;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
@@ -25,7 +24,7 @@ public class Game extends ApplicationAdapter
 	private Viewport viewport;
 	private InputHandler inputHandler;
 	
-	private Player player;
+	public static Player player;
 
 	@Override
 	public void create() {
@@ -34,7 +33,6 @@ public class Game extends ApplicationAdapter
 		Tile.load();
 		Entity.load();
 		tileMap = new TileMap();
-		tileMap.update();
 
 		camera = new OrthographicCamera();
 		viewport = new FitViewport(1280, 786, camera);
@@ -73,7 +71,6 @@ public class Game extends ApplicationAdapter
 		batch.setProjectionMatrix(camera.combined);
 		batch.begin();
 		
-		batch.draw(Tile.tex,-128,-128, 256, 256);
 		tileMap.draw(batch);
 		Entity.drawAllEntities(batch);
 		
