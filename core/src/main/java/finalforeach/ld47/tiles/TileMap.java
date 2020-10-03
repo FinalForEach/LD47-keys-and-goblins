@@ -12,33 +12,14 @@ import com.badlogic.gdx.utils.Array;
 
 public class TileMap
 {
-	class Room
-	{
-		Set<Room> connectedRooms;
-		int startI, startJ, width, height;
-		Room(int i, int j, int w, int h)
-		{
-			connectedRooms = new HashSet<Room>();
-			startI = i;
-			startJ = j;
-			width = w;
-			height = h;
-		}
-		public double manhattanDistToRoom(Room roomB) 
-		{
-			float cxA = startI + width/2;
-			float cyA = startJ + height/2;
-			float cxB = roomB.startI + roomB.width/2;
-			float cyB = roomB.startJ + roomB.height/2;
-			return Math.abs(cxB - cxA) + Math.abs(cyB - cyA);
-		}
-	}
 	public static final int MAP_SIZE = 128;
 	Tile[][] tiles = new Tile[MAP_SIZE][MAP_SIZE];
+	public Set<IUpdateDelta> updatingTiles;
 	public Vector2 spawnLoc;
 
 	public TileMap() 
 	{
+		updatingTiles = new HashSet<IUpdateDelta>();
 		spawnLoc = new Vector2();
 		generateLevel();
 	}
@@ -61,7 +42,6 @@ public class TileMap
 			int roomHeight = MathUtils.random(8, 32);
 			int startI = MathUtils.random(1, MAP_SIZE - roomWidth - 1);
 			int startJ = MathUtils.random(1, MAP_SIZE - roomHeight - 1);
-			System.out.println("Generating room @" + startI + ", " + startJ + " of size " + roomWidth +", " + roomHeight);
 			rooms.add(new Room(startI,startJ,roomWidth,roomHeight));
 		}
 		for(Room room : rooms) 
@@ -334,6 +314,14 @@ public class TileMap
 			tiles.add(t);
 		}
 		return tiles;
+	}
+	public void clickTile(int i, int j) 
+	{
+		Tile t = getTile(i, j);
+		if(t != null) 
+		{
+			t.click();
+		}
 	}
 
 }

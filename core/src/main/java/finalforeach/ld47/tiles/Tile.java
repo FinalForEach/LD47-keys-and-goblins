@@ -6,6 +6,8 @@ import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.math.collision.BoundingBox;
 
+import finalforeach.ld47.entities.Entity;
+
 public abstract class Tile
 {
 	public TextureRegion texReg;
@@ -15,8 +17,8 @@ public abstract class Tile
 	public BoundingBox bb;
 	/**The larger bounding box used for pushing slightly*/
 	public BoundingBox lbb;
-	private int i;
-	private int j;
+	protected int i;
+	protected int j;
 	
 	public Tile() 
 	{
@@ -49,6 +51,12 @@ public abstract class Tile
 
 	public boolean IsSolid() {
 		return false;
+	}
+
+	public void click() {
+	}
+
+	public void onEntered(Entity entity) {
 	}
 
 }

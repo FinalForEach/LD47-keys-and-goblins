@@ -1,7 +1,5 @@
 package finalforeach.ld47.entities;
 
-import java.util.Comparator;
-
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
@@ -12,7 +10,6 @@ import com.badlogic.gdx.math.collision.BoundingBox;
 import com.badlogic.gdx.utils.Array;
 
 import finalforeach.ld47.Game;
-import finalforeach.ld47.tiles.DebugTile;
 import finalforeach.ld47.tiles.Tile;
 
 public class Entity
@@ -25,6 +22,7 @@ public class Entity
 	public float lastX,lastY;
 	public Vector2 vel;
 	public BoundingBox bb;
+	public Tile curTile;
 	public Entity(float x, float y, float w, float h) 
 	{
 		this.x=x;
@@ -63,7 +61,7 @@ public class Entity
 	}
 	public void update(double deltaTime) 
 	{
-		Array<Tile>ts = Game.tileMap.getAdjacentTiles(getTileI(), getTileJ(),true);
+		Array<Tile>ts = Game.tileMap.getSurroundingTiles(getTileI(), getTileJ(),true);
 		ts.sort((Tile t1, Tile t2) -> 
 		{
 			float dx1 = t1.bb.getCenterX() - bb.getCenterX();
@@ -82,28 +80,61 @@ public class Entity
 
 		updateMovement(deltaTime);
 		updateBoundingBox();
-
+		
 		//Tile-Entity collisions
 		for(Tile t : ts) 
 		{
+			boolean b = false;
 			if(t.IsSolid() && bb.intersects(t.bb)) 
 			{
-				float xIntersect = Math.max(t.bb.max.x - bb.max.x, bb.min.x - t.bb.min.x);
-				float yIntersect = Math.max(t.bb.max.y - bb.max.y, bb.min.y - t.bb.min.y);
-				if(xIntersect>0 && xIntersect>yIntersect) 
-				{
-					x = lastX;
-					vel.x=0;
-					updateBoundingBox();
-				}
-				if(yIntersect>0 && yIntersect>xIntersect) 
-				{
-					y = lastY;
-					vel.y=0;
-					updateBoundingBox();
-				}
-			}
+				boolean intersectBot =bb.getCenterY() - bb.getHeight()/2 < t.bb.getCenterY();
+				boolean intersectTop =bb.getCenterY() + bb.getHeight()/2 > t.bb.getCenterY();
+				double botDiff = Math.abs(bb.getCenterY() - bb.getHeight()/2 - t.bb.getCenterY());
+				double topDiff = Math.abs(bb.getCenterY() + bb.getHeight()/2 - t.bb.getCenterY());
 
+				boolean intersectR =bb.getCenterX() - bb.getWidth()/2 < t.bb.getCenterX();
+				boolean intersectL =bb.getCenterX() + bb.getWidth()/2 > t.bb.getCenterX();
+				double rDiff = Math.abs(bb.getCenterX() - bb.getWidth()/2 - t.bb.getCenterX());
+				double lDiff = Math.abs(bb.getCenterX() + bb.getWidth()/2 - t.bb.getCenterX());
+				
+				double vertDiff = Math.max(topDiff, botDiff);
+				double horizDiff = Math.max(lDiff, rDiff);
+				if(vertDiff>horizDiff) 
+				{
+					if(intersectBot && botDiff > topDiff) 
+					{
+						y = t.bb.getCenterY()- bb.getHeight() *1.5f;
+					}
+					if(intersectTop && topDiff > botDiff) 
+					{
+						y = t.bb.getCenterY()+ bb.getHeight()/2 ;
+					}
+				}else 
+				{
+					if(intersectR && rDiff > lDiff) 
+					{
+						x = t.bb.getCenterX()- bb.getWidth() *1.5f;
+					}
+					if(intersectL && lDiff > rDiff) 
+					{
+						x = t.bb.getCenterX()+ bb.getWidth()/2 ;
+					}
+					
+				}
+				
+
+				
+				b=true;
+			}
+			if(b)break;
+		}
+
+		updateBoundingBox();
+		Tile t = Game.tileMap.getTile(getTileI(), getTileJ());
+		if(t!=null && t!=curTile) 
+		{
+			curTile = t;
+			curTile.onEntered(this);
 		}
 	}
 	public void updateMovement(double deltaTime) {}

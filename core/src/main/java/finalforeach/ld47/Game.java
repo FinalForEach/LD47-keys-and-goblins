@@ -1,5 +1,7 @@
 package finalforeach.ld47;
 
+import java.util.function.Predicate;
+
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.GL20;
@@ -10,6 +12,7 @@ import com.badlogic.gdx.utils.viewport.Viewport;
 
 import finalforeach.ld47.entities.Entity;
 import finalforeach.ld47.entities.Player;
+import finalforeach.ld47.tiles.IUpdateDelta;
 import finalforeach.ld47.tiles.Tile;
 import finalforeach.ld47.tiles.TileMap;
 
@@ -62,6 +65,17 @@ public class Game extends ApplicationAdapter
 		double deltaTime = Gdx.graphics.getDeltaTime();
 		handleInput(deltaTime);
 		Entity.updateAllEntities(deltaTime);
+		for(IUpdateDelta t : tileMap.updatingTiles) 
+		{
+			t.update(deltaTime);
+		}
+		tileMap.updatingTiles.removeIf(new Predicate<IUpdateDelta>() {
+			@Override
+			public boolean test(IUpdateDelta u) {
+				return !u.IsActive();
+			}
+
+		});
 		
 		camera.position.set(player.bb.getCenterX(),player.bb.getCenterY(),0);
 		camera.update();
