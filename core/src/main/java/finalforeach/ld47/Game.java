@@ -15,6 +15,7 @@ public class Game extends ApplicationAdapter {
 		batch = new SpriteBatch();
 		Tile.load();
 		tileMap = new TileMap();
+		tileMap.update();
 	}
 
 	@Override

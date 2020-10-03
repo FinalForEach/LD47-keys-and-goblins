@@ -21,17 +21,78 @@ public abstract class Tile
 	{
 		image.dispose();
 	}
+	public void update(TileMap tileMap) {}
 	public abstract void draw(SpriteBatch batch);
 }
-class DebugTile extends Tile
+class BasicTile extends Tile
+{
+	@Override
+	public void draw(SpriteBatch batch) {
+		batch.draw(texReg, i * 16, j * 16);
+	}
+}
+class DebugTile extends BasicTile
 {
 	DebugTile()
 	{
 		texReg = new TextureRegion(image,0,0,16,16);
 	}
-
+}
+class FloorTile extends BasicTile
+{
+	FloorTile()
+	{
+		texReg = new TextureRegion(image,16,0,16,16);
+	}
+}
+class WallTile extends BasicTile
+{
+	WallTile()
+	{
+		texReg = new TextureRegion(image,32,0,16,16);
+	}
 	@Override
-	public void draw(SpriteBatch batch) {
-		batch.draw(texReg, i * 16, j * 16);
+	public void update(TileMap tileMap) 
+	{
+		boolean wallUp = tileMap.getTile(i, j+1) instanceof WallTile;
+		boolean wallDown = tileMap.getTile(i, j-1) instanceof WallTile;
+		boolean wallLeft = tileMap.getTile(i-1, j) instanceof WallTile;
+		boolean wallRight = tileMap.getTile(i+1, j) instanceof WallTile;
+
+		// Basic wall
+		if(!wallUp && wallDown && !wallLeft && !wallRight) 
+		{
+			texReg = new TextureRegion(image,0,16,16,16);
+		}
+		if(wallUp && !wallDown && !wallLeft && !wallRight) 
+		{
+			texReg = new TextureRegion(image,0,32,16,16);
+		}
+		
+		// Horizontal walls
+		if(wallUp && !wallDown && !wallLeft && wallRight) 
+		{
+			texReg = new TextureRegion(image,16,32,16,16);
+		}
+		if(wallUp && !wallDown && wallLeft && !wallRight) 
+		{
+			texReg = new TextureRegion(image,32,32,16,16);
+		}
+		if(wallUp && !wallDown && wallLeft && wallRight) 
+		{
+			texReg = new TextureRegion(image,24,32,16,16);
+		}
+		if(!wallUp && wallDown && !wallLeft && wallRight) 
+		{
+			texReg = new TextureRegion(image,16,16,16,16);
+		}
+		if(!wallUp && wallDown && wallLeft && !wallRight) 
+		{
+			texReg = new TextureRegion(image,32,16,16,16);
+		}
+		if(!wallUp && wallDown && wallLeft && wallRight) 
+		{
+			texReg = new TextureRegion(image,24,16,16,16);
+		}
 	}
 }
