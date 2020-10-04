@@ -396,6 +396,7 @@ public class Game extends ApplicationAdapter
 		Enemy.allEnemies.clear();
 		Entity.entities.clear();
 		Entity.entities.add(player);
+		tileMap.floorTiles.clear();
 		tileMap.updatingTiles.clear();
 
 		if(player.inventory.contains(new KeyItem(LevelTheme.NORMAL), false)
