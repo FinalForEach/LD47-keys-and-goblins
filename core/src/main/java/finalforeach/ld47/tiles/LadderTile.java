@@ -22,6 +22,9 @@ public class LadderTile extends BasicTile
 		case HOT:
 			texReg = new TextureRegion(tex,64,32,16,16);
 			break;
+		case LOVE:
+			texReg = new TextureRegion(tex,64,48,16,16);
+			break;
 		};
 	}
 }

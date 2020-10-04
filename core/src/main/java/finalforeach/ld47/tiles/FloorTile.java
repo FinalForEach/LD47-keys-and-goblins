@@ -1,6 +1,8 @@
 package finalforeach.ld47.tiles;
 
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+
 
 public class FloorTile extends BasicTile
 {
@@ -21,6 +23,10 @@ public class FloorTile extends BasicTile
 			break;
 		case HOT:
 			texReg = new TextureRegion(tex,16,32,16,16);
+			break;
+		case LOVE:
+			texReg = new TextureRegion(tex,16,48,16,16);
+			glowColor = new Color(252/255f,139f/255f,207f/255f,0.01f);
 			break;
 		default:
 			break;

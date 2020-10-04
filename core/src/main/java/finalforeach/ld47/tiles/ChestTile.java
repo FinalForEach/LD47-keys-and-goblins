@@ -52,6 +52,10 @@ public class ChestTile extends BasicTile
 			closedTexReg = new TextureRegion(tex,80,32,16,16);
 			openTexReg = new TextureRegion(tex,96,32,16,16);
 			break;
+		case LOVE:
+			closedTexReg = new TextureRegion(tex,80,48,16,16);
+			openTexReg = new TextureRegion(tex,96,48,16,16);
+			break;
 		}
 		if(isOpen) 
 		{

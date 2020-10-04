@@ -30,7 +30,11 @@ public class ItemEntity extends Entity
 		super.onIntersect(entityB);
 		if(entityB instanceof Player) 
 		{
-			dead = pickupItem((Player)entityB);
+			if(pickupItem((Player)entityB)) 
+			{
+				dead = true;
+				pickupSound.play();
+			}
 		}
 	}
 	/**

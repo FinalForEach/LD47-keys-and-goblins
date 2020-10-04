@@ -22,9 +22,11 @@ import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 
+import finalforeach.ld47.entities.CompassItem;
 import finalforeach.ld47.entities.Enemy;
 import finalforeach.ld47.entities.Entity;
 import finalforeach.ld47.entities.ItemEntity;
+import finalforeach.ld47.entities.KeyItem;
 import finalforeach.ld47.entities.Player;
 import finalforeach.ld47.tiles.DebugTile;
 import finalforeach.ld47.tiles.IUpdateDelta;
@@ -52,7 +54,9 @@ public class Game extends ApplicationAdapter
 	private static Texture blankTex;
 	private static Texture fovTex;
 	private static Texture glowTileTex;
-	
+
+	public static TextureRegion gameOverTexReg;
+	public static TextureRegion youWinTexReg;
 	public static Player player;
 
 	@Override
@@ -63,6 +67,8 @@ public class Game extends ApplicationAdapter
 		batchDebug = new SpriteBatch();
 		Tile.load();
 		Entity.load();
+		gameOverTexReg = new TextureRegion(Entity.tex, 0, 80, 160, 56);
+		youWinTexReg = new TextureRegion(Entity.tex, 0 , 136, 160, 56);
 		blankTex = new Texture("blankTex.png");
 		fovTex = new Texture("FOV.png");
 		glowTileTex = new Texture("glowTile.png");
@@ -94,12 +100,12 @@ public class Game extends ApplicationAdapter
 		restart();
 		
 	}
-	public void restart() 
+	public static void restart() 
 	{
-
+		Enemy.allEnemies.clear();
+		Entity.entities.clear();
 		tileMap = new TileMap();
 		player = new Player(tileMap.spawnLoc.x,tileMap.spawnLoc.y);
-		Entity.entities.clear();
 		Entity.entities.add(player);
 	}
 	@Override
@@ -147,7 +153,7 @@ public class Game extends ApplicationAdapter
 			}
 
 		});
-		if(Enemy.allEnemies.size<10) 
+		if(Enemy.allEnemies.size<10 && tileMap.levelTheme!=LevelTheme.LOVE) 
 		{
 			Tile t =(Tile) tileMap.floorTiles.toArray()[MathUtils.random(tileMap.floorTiles.size()-1)];
 			if(t!=null) 
@@ -269,10 +275,6 @@ public class Game extends ApplicationAdapter
         		vB.y, 
         		vB.x-vA.x  , 
         		vA.y-vB.y);
-		/*batchPostProcessing.draw(new DebugTile().texReg, vA.x, 
-        		vB.y, 
-        		vB.x-vA.x  , 
-        		vA.y-vB.y);*/
 
         batchPostProcessing.end();
 
@@ -285,6 +287,26 @@ public class Game extends ApplicationAdapter
 		batch.setBlendFunction(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
 		batch.setProjectionMatrix(uiCamera.combined);
 		batch.begin();
+				
+		for(ItemEntity i : player.inventory) 
+		{
+			if(i instanceof CompassItem)
+			{
+				float angle = MathUtils.atan2(tileMap.treasureLoc.y - player.y, tileMap.treasureLoc.x - player.x);
+				batch.draw(CompassItem.pointTexReg, 
+						uiViewport.getWorldWidth()/2 + 20,
+						-uiViewport.getWorldHeight()/2, 
+						8 - 20, 8, 16, 16, 2, 2, MathUtils.radiansToDegrees * angle );
+				
+				angle = MathUtils.atan2(tileMap.exitLoc.y - player.y, tileMap.exitLoc.x - player.x);
+				batch.draw(CompassItem.pointExitTexReg, 
+						uiViewport.getWorldWidth()/2 + 20,
+						-uiViewport.getWorldHeight()/2, 
+						8 - 20, 8, 16, 16, 2, 2, MathUtils.radiansToDegrees * angle );
+				break;
+			}
+		}
+		
 		// Empty hearts
 
 		for(int i=0; i< player.getMaxHP(); i++) 
@@ -298,7 +320,7 @@ public class Game extends ApplicationAdapter
 			batch.draw(Entity.tex, 2 + (i*1.05f)*64, -64, 
 					64, 64, 0, 16, 16, 16, false, false);
 		}
-		if(player.getHP() - Math.floor(player.getHP()) > 0) 
+		if(player.getHP() - Math.floor(player.getHP()) > 0 && player.getHP()>0) 
 		{
 			// Half heart
 			batch.draw(Entity.tex, 2 + (((int) player.getHP())*1.05f)*64, -64, 
@@ -309,6 +331,17 @@ public class Game extends ApplicationAdapter
 		{
 			ItemEntity item = player.inventory.get(i);
 			batch.draw(item.texReg, 0, -128-(i*16), 8, 8, 64, 64, 1, 1, 0);
+		}
+		
+		if(player.dead) 
+		{
+			batch.draw(gameOverTexReg, uiViewport.getWorldWidth()/2 - 256, -256, 512, 170);
+		}else 
+		{
+			if(tileMap.levelTheme==LevelTheme.LOVE) 
+			{
+				batch.draw(youWinTexReg, uiViewport.getWorldWidth()/2 - 256, -256, 512, 170);
+			}
 		}
 		
 		batch.end();
@@ -360,24 +393,41 @@ public class Game extends ApplicationAdapter
 		glowTileTex.dispose();
 	}
 	public static void nextLevel() {
+		Enemy.allEnemies.clear();
 		Entity.entities.clear();
 		Entity.entities.add(player);
 		tileMap.updatingTiles.clear();
-		
-		switch(tileMap.levelTheme) 
+
+		if(player.inventory.contains(new KeyItem(LevelTheme.NORMAL), false)
+				&& player.inventory.contains(new KeyItem(LevelTheme.OVERGROWN), false)
+				&& player.inventory.contains(new KeyItem(LevelTheme.HOT), false)) 
 		{
-		case NORMAL:
-			tileMap.levelTheme = LevelTheme.OVERGROWN;
-			break;
-		case OVERGROWN:
-			tileMap.levelTheme = LevelTheme.HOT;
-			break;
-		case HOT:
-			tileMap.levelTheme = LevelTheme.NORMAL;
-			break;
-		
+			for(ItemEntity i : player.inventory) 
+			{
+				System.out.println(i);
+			}
+			tileMap.levelTheme = LevelTheme.LOVE;
+			player.inventory.clear();
+		}else 
+		{
+			switch(tileMap.levelTheme) 
+			{
+			case NORMAL:
+				tileMap.levelTheme = LevelTheme.OVERGROWN;
+				break;
+			case OVERGROWN:
+				tileMap.levelTheme = LevelTheme.HOT;
+				break;
+			case HOT:
+				tileMap.levelTheme = LevelTheme.NORMAL;
+				break;
+			case LOVE:
+				restart();
+				break;
+			
+			}
 		}
-		Enemy.allEnemies.clear();
+		
 		tileMap.generateLevel();
 		player.x = Game.tileMap.spawnLoc.x;
 		player.y = Game.tileMap.spawnLoc.y;

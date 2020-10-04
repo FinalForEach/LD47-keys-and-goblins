@@ -10,6 +10,7 @@ import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Array;
 
+import finalforeach.ld47.entities.CompassItem;
 import finalforeach.ld47.entities.HeartItem;
 import finalforeach.ld47.entities.KeyItem;
 
@@ -21,12 +22,16 @@ public class TileMap
 	public Set<IUpdateDelta> updatingTiles;
 	public Set<FloorTile> floorTiles;
 	public Vector2 spawnLoc;
+	public Vector2 treasureLoc;
+	public Vector2 exitLoc;
 
 	public TileMap() 
 	{
 		updatingTiles = new HashSet<>();
 		floorTiles = new HashSet<>();
 		spawnLoc = new Vector2();
+		treasureLoc = new Vector2();
+		exitLoc = new Vector2();
 		generateLevel();
 	}
 	public void generateLevel() 
@@ -129,38 +134,51 @@ public class TileMap
 		addTile(new LadderTile(), rt.getI(), rt.getJ());
 
 		rt = replaceableTiles.random();
+		exitLoc.set(rt.bb.min.x,rt.bb.min.y);
 		replaceableTiles.removeValue(rt, true);
 		addTile(new StairTile(), rt.getI(), rt.getJ());
 
 		int numChests = 5;
 		int numSpikes = 10;
+		boolean compassSpawned=false;
 		for(int i = 0; i < numChests; i++) 
 		{
 			rt = replaceableTiles.random();
 			if(rt!=null) 
 			{
 				replaceableTiles.removeValue(rt, true);
-				if(i==0) 
+				if(i==0 && levelTheme!=LevelTheme.LOVE) 
 				{
 					addTile(new ChestTile(new KeyItem(levelTheme)), rt.getI(), rt.getJ());
+					treasureLoc.set(rt.bb.min.x,rt.bb.min.y);
 				}else 
 				{
-					addTile(new ChestTile(new HeartItem()), rt.getI(), rt.getJ());
+					if(!compassSpawned && levelTheme!=LevelTheme.LOVE) 
+					{
+						addTile(new ChestTile(new CompassItem()), rt.getI(), rt.getJ());
+						compassSpawned=true;
+					}else 
+					{
+						addTile(new ChestTile(new HeartItem()), rt.getI(), rt.getJ());	
+					}
 				}
 			}
 		}
-		for(int s = 0; s < numSpikes; s++) 
+		if(levelTheme!=LevelTheme.LOVE) 
 		{
-			rt = replaceableTiles.random();
-			if(rt!=null) 
+			for(int s = 0; s < numSpikes; s++) 
 			{
-				replaceableTiles.removeValue(rt, true);
-				for(Tile t : getSurroundingTiles(rt.getI(), rt.getJ(), true, MathUtils.random(2, 3))) 
+				rt = replaceableTiles.random();
+				if(rt!=null) 
 				{
-					if(t instanceof FloorTile && MathUtils.randomBoolean(0.5f)) 
+					replaceableTiles.removeValue(rt, true);
+					for(Tile t : getSurroundingTiles(rt.getI(), rt.getJ(), true, MathUtils.random(2, 3))) 
 					{
-						addTile(new SpikeTile(), t.getI(), t.getJ());	
-						replaceableTiles.removeValue(t, true);
+						if(t instanceof FloorTile && MathUtils.randomBoolean(0.5f)) 
+						{
+							addTile(new SpikeTile(), t.getI(), t.getJ());	
+							replaceableTiles.removeValue(t, true);
+						}
 					}
 				}
 			}
@@ -214,6 +232,27 @@ public class TileMap
 		}
 
 
+		if(levelTheme==LevelTheme.LOVE) 
+		{
+			int numMoney = 30;
+
+			for(int p = 0; p < numMoney; p++) 
+			{
+				rt = replaceableTiles.random();
+				if(rt!=null) 
+				{
+					replaceableTiles.removeValue(rt, true);
+					for(Tile t : getSurroundingTiles(rt.getI(), rt.getJ(), true, MathUtils.random(1, 4))) 
+					{
+						if(t instanceof FloorTile && MathUtils.randomBoolean(0.125f)) 
+						{
+							addTile(new MoneyTile(), t.getI(), t.getJ());	
+							replaceableTiles.removeValue(t, true);
+						}
+					}
+				}
+			}
+		}
 
 		// Trim all the walls
 		for(int i=0;i<MAP_SIZE;i++) 

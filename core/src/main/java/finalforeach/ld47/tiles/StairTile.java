@@ -4,6 +4,7 @@ import com.badlogic.gdx.graphics.g2d.TextureRegion;
 
 import finalforeach.ld47.Game;
 import finalforeach.ld47.entities.Entity;
+import finalforeach.ld47.entities.KeyItem;
 import finalforeach.ld47.entities.Player;
 
 public class StairTile extends BasicTile

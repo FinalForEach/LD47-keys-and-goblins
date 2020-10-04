@@ -44,6 +44,11 @@ public class InputHandler implements InputProcessor
 			Game.player.y = Game.tileMap.spawnLoc.y;
 			Game.player.updateBoundingBox();
 		}
+
+		if(Game.player.dead && Keys.SPACE == keycode) 
+		{
+			Game.restart();
+		}
 		return false;
 	}
 

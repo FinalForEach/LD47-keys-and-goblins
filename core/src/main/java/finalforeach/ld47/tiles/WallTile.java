@@ -23,6 +23,9 @@ public class WallTile extends BasicTile
 		case HOT:
 			texReg = new TextureRegion(tex,48,32,16,16);
 			break;
+		case LOVE:
+			texReg = new TextureRegion(tex,48,48,16,16);
+			break;
 		default:
 			break;
 		

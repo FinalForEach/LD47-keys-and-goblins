@@ -59,6 +59,7 @@ public class StrikeEntity extends Entity
 		{
 			entityB.hit(2f);
 			dead=true;
+			hitSound.play();
 		}
 	}
 }

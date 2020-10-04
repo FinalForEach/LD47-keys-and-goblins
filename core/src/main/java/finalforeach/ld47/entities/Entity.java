@@ -1,5 +1,7 @@
 package finalforeach.ld47.entities;
 
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
@@ -17,6 +19,8 @@ public class Entity
 {
 	public static Array<Entity> entities = new Array<Entity>();
 	public static Texture tex;
+	public static Sound hitSound;
+	public static Sound pickupSound;
 
 	public TextureRegion texReg;
 	public float x,y;
@@ -42,10 +46,14 @@ public class Entity
 	public static void load() 
 	{
 		tex = new Texture("entities.png");
+		hitSound   = Gdx.audio.newSound(Gdx.files.internal("hit.ogg"));
+		pickupSound= Gdx.audio.newSound(Gdx.files.internal("pickup.ogg"));
 	}
 	public static void dispose() 
 	{
 		tex.dispose();
+		hitSound.dispose();
+		pickupSound.dispose();
 	}
 	public static void updateAllEntities(double deltaTime) 
 	{
@@ -206,6 +214,10 @@ public class Entity
 		{
 			hp-=dmg;
 			invulnerableTimer = 0.2f;
+			if(this instanceof Player) 
+			{
+				hitSound.play();	
+			}
 			if(hp<0) 
 			{
 				onDeath();
