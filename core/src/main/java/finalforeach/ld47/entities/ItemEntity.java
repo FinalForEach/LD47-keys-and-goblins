@@ -44,4 +44,8 @@ public class ItemEntity extends Entity
 	public float getGlowRadius() {
 		return 32;
 	}
+
+	public boolean canHit() {
+		return false;
+	}
 }

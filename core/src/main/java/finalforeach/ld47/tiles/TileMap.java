@@ -19,11 +19,13 @@ public class TileMap
 	Tile[][] tiles = new Tile[MAP_SIZE][MAP_SIZE];
 	public LevelTheme levelTheme = LevelTheme.NORMAL;
 	public Set<IUpdateDelta> updatingTiles;
+	public Set<FloorTile> floorTiles;
 	public Vector2 spawnLoc;
 
 	public TileMap() 
 	{
-		updatingTiles = new HashSet<IUpdateDelta>();
+		updatingTiles = new HashSet<>();
+		floorTiles = new HashSet<>();
 		spawnLoc = new Vector2();
 		generateLevel();
 	}
@@ -220,6 +222,10 @@ public class TileMap
 			{
 
 				Tile t =getTile(i,j);
+				if(t instanceof FloorTile) 
+				{
+					floorTiles.add((FloorTile) t);
+				}
 				if(!(t instanceof WallTile))continue;
 				Array<Tile> surr = getSurroundingTiles(i, j, false);
 				boolean canTrim = true;

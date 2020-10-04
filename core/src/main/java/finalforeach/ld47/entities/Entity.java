@@ -28,6 +28,7 @@ public class Entity
 	private double hp;
 	private double maxHP;
 	public boolean dead;
+	float rot;
 	public Entity(float x, float y, float w, float h) 
 	{
 		this.x=x;
@@ -184,16 +185,15 @@ public class Entity
 	public void draw(SpriteBatch batch, float x, float y) 
 	{
 		float epsilon = 0.0001f;
-		float u = texReg.getU()+epsilon;
-		float v = texReg.getV()+epsilon;
-		float u2 = texReg.getU2()-epsilon;
-		float v2 = texReg.getV2()-epsilon;
 		if(invulnerableTimer>0) 
 		{
 			batch.setColor(1, 0, 0, 1);	// When hit
 		}
-		
-		batch.draw(tex,x, y, bb.getWidth(), bb.getHeight(), u,v2,u2,v);
+		int w =texReg.getRegionWidth();
+		int h =texReg.getRegionHeight();
+		//batch.draw(tex,x, y, bb.getWidth(), bb.getHeight(), u,v2,u2-u,v-v2,rot,
+		batch.draw(tex,x,y,w/2,h/2,w,h,1,1,rot,
+				texReg.getRegionX(),texReg.getRegionY(),w,h,false,false);
 		
 		if(invulnerableTimer>0) 
 		{
@@ -206,6 +206,10 @@ public class Entity
 		{
 			hp-=dmg;
 			invulnerableTimer = 0.2f;
+			if(hp<0) 
+			{
+				onDeath();
+			}
 		}
 	}
 	public double getHP() {return hp;}
@@ -224,5 +228,13 @@ public class Entity
 
 	public float getGlowRadius() {
 		return 0;
+	}
+
+	public boolean canHit() {
+		return true;
+	}
+	public void onDeath() 
+	{
+		dead=true;
 	}
 }

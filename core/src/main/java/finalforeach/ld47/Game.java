@@ -14,15 +14,19 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.glutils.FrameBuffer;
 import com.badlogic.gdx.graphics.glutils.ShaderProgram;
+import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 
+import finalforeach.ld47.entities.Enemy;
 import finalforeach.ld47.entities.Entity;
 import finalforeach.ld47.entities.ItemEntity;
 import finalforeach.ld47.entities.Player;
+import finalforeach.ld47.tiles.DebugTile;
 import finalforeach.ld47.tiles.IUpdateDelta;
 import finalforeach.ld47.tiles.LevelTheme;
 import finalforeach.ld47.tiles.Tile;
@@ -103,16 +107,18 @@ public class Game extends ApplicationAdapter
 		viewport.update(width, height);
 		uiViewport.update(width, height);
 		ppViewport.update(width, height);
+		
+
+    	postProcessingFBO = new FrameBuffer(Format.RGB565, (int)(width), (int)(height), false);
+        postProcessingTexReg = new TextureRegion(postProcessingFBO.getColorBufferTexture());
+        postProcessingTexReg.flip(false, true);
 	}
 	public void handleInput(double deltaTime) 
 	{
 		inputHandler.update();
 	}
-	@Override
-	public void render() 
+	public void update(double deltaTime) 
 	{
-		uiCamera.position.set(1280/2,-768/2,0);
-		double deltaTime = Gdx.graphics.getDeltaTime();
 		handleInput(deltaTime);
 		Entity.updateAllEntities(deltaTime);
 		Array<Entity> deadEntities = null;
@@ -141,6 +147,21 @@ public class Game extends ApplicationAdapter
 			}
 
 		});
+		if(Enemy.allEnemies.size<10) 
+		{
+			Tile t =(Tile) tileMap.floorTiles.toArray()[MathUtils.random(tileMap.floorTiles.size()-1)];
+			if(t!=null) 
+			{
+				Enemy.spawnEnemy(new Enemy(t.getI()*16, t.getJ()*16));
+			}
+		}
+	}
+	@Override
+	public void render() 
+	{
+		uiCamera.position.set(1280/2,-768/2,0);
+		double deltaTime = Gdx.graphics.getDeltaTime();
+		update(deltaTime);
 
 		
 		// Post processing
@@ -159,19 +180,17 @@ public class Game extends ApplicationAdapter
 
 		viewport.apply();
 		camera.position.set(player.bb.getCenterX(),player.bb.getCenterY(),0);
+        float z = camera.zoom;
+        camera.zoom=z;
 		camera.update();
 
 		// Lights
-		//batch.setBlendFunction(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
-		batch.setBlendFunction(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
-		batch.setProjectionMatrix(camera.combined);
-		
 
 		Gdx.gl.glClearColor(0, 0, 0, 0);
 		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
+		batch.setProjectionMatrix(camera.combined);
+		
 		batch.setBlendFunctionSeparate(GL20.GL_SRC_ALPHA, GL20.GL_DST_ALPHA, GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
-
-		Gdx.gl.glBlendEquationSeparate(GL30.GL_FUNC_ADD,GL30.GL_FUNC_ADD);
         batch.begin();
         // FOV sphere
         float fovRadius = 128;
@@ -208,17 +227,16 @@ public class Game extends ApplicationAdapter
         batch.setColor(1, 1, 1, 1);
         batch.end();
 
-		Gdx.gl.glBlendEquationSeparate(GL30.GL_FUNC_ADD,GL30.GL_FUNC_ADD);
 		
 	    
         postProcessingFBO.end();
 
-        Gdx.gl.glBlendEquation(GL30.GL_FUNC_ADD);
 		
         // Main drawing
 
 		viewport.apply();
 		camera.position.set(player.bb.getCenterX(),player.bb.getCenterY(),0);
+		camera.zoom = z;
 		camera.update();
 
 		Gdx.gl.glClearColor(0, 0, 0, 1);
@@ -231,10 +249,13 @@ public class Game extends ApplicationAdapter
 		Entity.drawAllEntities(batch);
 				
 		batch.end();
+		
         
 
+		camera.zoom = z;
 		// Finish post processing
         viewport.apply();
+		camera.position.set(player.bb.getCenterX(),player.bb.getCenterY(),0);
 		camera.update();
 		batchPostProcessing.setBlendFunction( GL20.GL_DST_COLOR, GL20.GL_ONE_MINUS_SRC_ALPHA);
 		batchPostProcessing.setProjectionMatrix(camera.combined);
@@ -242,16 +263,20 @@ public class Game extends ApplicationAdapter
 		        
 		Vector2 vA = viewport.unproject(new Vector2(0,0));
 		Vector2 vB = viewport.unproject(new Vector2(width,height));
+		
         batchPostProcessing.draw(postProcessingTexReg, 
         		vA.x, 
         		vB.y, 
         		vB.x-vA.x  , 
-        		vA.y-vB.y);               
-        
+        		vA.y-vB.y);
+		/*batchPostProcessing.draw(new DebugTile().texReg, vA.x, 
+        		vB.y, 
+        		vB.x-vA.x  , 
+        		vA.y-vB.y);*/
 
         batchPostProcessing.end();
-		
-		
+
+		camera.zoom = z;
 		
 		// UI
         uiViewport.apply();
@@ -317,7 +342,7 @@ public class Game extends ApplicationAdapter
 			+ "void main()\n"//
 			+ "{\n" //
 			+ "  vec4 lightColor = v_color * texture2D(u_texture, v_texCoords);\n"
-			+ "  gl_FragColor.xyzw = lightColor.xyzw;\n" //
+			+ "  gl_FragColor = lightColor;\n" //
 			//+ "  gl_FragColor.a = length(lightColor.xzy) / length(vec3(1));\n"
 			+ "}";
 
@@ -352,6 +377,7 @@ public class Game extends ApplicationAdapter
 			break;
 		
 		}
+		Enemy.allEnemies.clear();
 		tileMap.generateLevel();
 		player.x = Game.tileMap.spawnLoc.x;
 		player.y = Game.tileMap.spawnLoc.y;
