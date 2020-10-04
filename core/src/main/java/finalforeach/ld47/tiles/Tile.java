@@ -59,4 +59,8 @@ public abstract class Tile
 	public void onEntered(Entity entity) {
 	}
 
+	public void onStandUpdate(Entity entity, double deltaTime) {
+		
+	}
+
 }

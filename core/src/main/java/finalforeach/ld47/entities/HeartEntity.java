@@ -20,4 +20,16 @@ public class HeartEntity extends Entity
 		timer+=deltaTime;
 		y = 4*MathUtils.sin(timer) + anchorY;
 	}
+	@Override
+	public void onIntersect(Entity entityB) {
+		super.onIntersect(entityB);
+		if(entityB instanceof Player) 
+		{
+			if(entityB.getHP()<entityB.getMaxHP()) 
+			{
+				entityB.heal(1);
+				dead = true;	
+			}
+		}
+	}
 }

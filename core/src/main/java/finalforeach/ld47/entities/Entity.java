@@ -23,11 +23,18 @@ public class Entity
 	public Vector2 vel;
 	public BoundingBox bb;
 	public Tile curTile;
+	public double invulnerableTimer;
+	private double hp;
+	private double maxHP;
+	public boolean dead;
 	public Entity(float x, float y, float w, float h) 
 	{
 		this.x=x;
 		this.y=y;
 		bb = new BoundingBox(new Vector3(x,y,0), new Vector3(x+w,y+h,0));
+		hp = 3f;
+		maxHP = 5f;
+		dead = false;
 	}
 
 	public static void load() 
@@ -44,7 +51,24 @@ public class Entity
 		{
 			e.update(deltaTime);
 		}
+		for(int i = 0; i< entities.size; i++) 
+		{
+			Entity eA = entities.get(i);
+			for(int j = i+1; j< entities.size; j++) 
+			{
+				if(i==j)continue;
+				Entity eB = entities.get(j);
+				if(eA.bb.intersects(eB.bb)) 
+				{
+					eA.onIntersect(eB);
+					eB.onIntersect(eA);
+				}
+			}
+		}
 	}
+	public void onIntersect(Entity entityB) {
+	}
+
 	public static void drawAllEntities(SpriteBatch batch) 
 	{
 
@@ -61,6 +85,7 @@ public class Entity
 	}
 	public void update(double deltaTime) 
 	{
+		invulnerableTimer=Math.max(0, invulnerableTimer-deltaTime);
 		Array<Tile>ts = Game.tileMap.getSurroundingTiles(getTileI(), getTileJ(),true);
 		ts.sort((Tile t1, Tile t2) -> 
 		{
@@ -131,10 +156,14 @@ public class Entity
 
 		updateBoundingBox();
 		Tile t = Game.tileMap.getTile(getTileI(), getTileJ());
-		if(t!=null && t!=curTile) 
+		if(t!=null) 
 		{
-			curTile = t;
-			curTile.onEntered(this);
+			if(t!=curTile) 
+			{
+				curTile = t;
+				curTile.onEntered(this);	
+			}
+			curTile.onStandUpdate(this, deltaTime);
 		}
 	}
 	public void updateMovement(double deltaTime) {}
@@ -147,16 +176,39 @@ public class Entity
 		return MathUtils.floor(bb.getCenterY()/16f);
 	}
 	public void draw(SpriteBatch batch) 
-	{/*
-		Tile debug = new DebugTile();
-		debug.setTilePos(getTileI(), getTileJ());
-		debug.draw(batch);*/
-
+	{
 		float epsilon = 0.0001f;
 		float u = texReg.getU()+epsilon;
 		float v = texReg.getV()+epsilon;
 		float u2 = texReg.getU2()-epsilon;
 		float v2 = texReg.getV2()-epsilon;
+		if(invulnerableTimer>0) 
+		{
+			batch.setColor(1, 0, 0, 1);	// When hit
+		}
+		
 		batch.draw(tex,x, y, bb.getWidth(), bb.getHeight(), u,v2,u2,v);
+		
+		if(invulnerableTimer>0) 
+		{
+			batch.setColor(1, 1, 1, 1); // Return colour to normal	
+		}
+	}
+	public void hit(double dmg) 
+	{
+		if(invulnerableTimer==0) 
+		{
+			hp-=dmg;
+			invulnerableTimer = 0.2f;
+		}
+	}
+	public double getHP() {return hp;}
+
+	public void heal(double hp) {
+		this.hp=Math.min(maxHP, this.hp+hp);
+	}
+
+	public double getMaxHP() {
+		return maxHP;
 	}
 }

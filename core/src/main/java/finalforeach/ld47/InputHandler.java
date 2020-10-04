@@ -6,7 +6,6 @@ import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector3;
 
-import finalforeach.ld47.tiles.DebugTile;
 
 public class InputHandler implements InputProcessor
 {
@@ -20,7 +19,7 @@ public class InputHandler implements InputProcessor
 		if(Gdx.input.isTouched()) 
 		{
 			Vector3 mVec = new Vector3(Gdx.input.getX(), Gdx.input.getY(),0);
-			mVec = Game.camera.unproject(mVec);
+			mVec = Game.viewport.unproject(mVec);
 			Game.tileMap.clickTile(MathUtils.floor(mVec.x/16f), MathUtils.floor(mVec.y/16f));
 		}
 	}

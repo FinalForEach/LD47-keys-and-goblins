@@ -9,6 +9,25 @@ public class WallTile extends BasicTile
 		texReg = new TextureRegion(tex,48,0,16,16);
 	}
 
+	@Override
+	public void update(TileMap tileMap) {
+		super.update(tileMap);
+		switch(tileMap.levelTheme) 
+		{
+		case NORMAL:
+			texReg = new TextureRegion(tex,48,0,16,16);
+			break;
+		case OVERGROWN:
+			texReg = new TextureRegion(tex,48,16,16,16);
+			break;
+		case HOT:
+			texReg = new TextureRegion(tex,48,32,16,16);
+			break;
+		default:
+			break;
+		
+		}
+	}
 	public boolean IsSolid() {
 		return true;
 	}

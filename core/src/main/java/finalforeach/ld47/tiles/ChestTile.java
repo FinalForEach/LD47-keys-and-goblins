@@ -28,4 +28,31 @@ public class ChestTile extends BasicTile
 		texReg = openTexReg;
 		
 	}
+	
+	@Override
+	public void update(TileMap tileMap) {
+		super.update(tileMap);
+		switch(tileMap.levelTheme) 
+		{
+		case NORMAL:
+			closedTexReg = new TextureRegion(tex,80,0,16,16);
+			openTexReg = new TextureRegion(tex,96,0,16,16);
+			break;
+		case OVERGROWN:
+			closedTexReg = new TextureRegion(tex,80,16,16,16);
+			openTexReg = new TextureRegion(tex,96,16,16,16);
+			break;
+		case HOT:
+			closedTexReg = new TextureRegion(tex,80,32,16,16);
+			openTexReg = new TextureRegion(tex,96,32,16,16);
+			break;
+		}
+		if(isOpen) 
+		{
+			texReg = openTexReg;
+		}else 
+		{
+			texReg = closedTexReg;
+		}
+	}
 }

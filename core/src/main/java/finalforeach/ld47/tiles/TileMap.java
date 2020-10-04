@@ -14,6 +14,11 @@ public class TileMap
 {
 	public static final int MAP_SIZE = 128;
 	Tile[][] tiles = new Tile[MAP_SIZE][MAP_SIZE];
+	public enum LevelTheme
+	{
+		NORMAL, OVERGROWN, HOT
+	}
+	public LevelTheme levelTheme = LevelTheme.NORMAL;
 	public Set<IUpdateDelta> updatingTiles;
 	public Vector2 spawnLoc;
 
@@ -33,7 +38,7 @@ public class TileMap
 				addTile(new WallTile(), i, j);
 			}
 		}
-		
+
 		int numRooms = MathUtils.random(10, 16);
 		Array<Room> rooms = new Array<Room>();
 		for(int r = 0; r < numRooms; r++) 
@@ -60,7 +65,7 @@ public class TileMap
 		}
 
 		// Connect the rooms with paths
-		
+
 		Set<Room> connRooms = new HashSet<Room>();
 		Set<Room> unconnRooms = new HashSet<Room>();
 		for(Room room : rooms) 
@@ -72,29 +77,29 @@ public class TileMap
 				Room roomB = rooms.get(rB);
 				if(room==roomB)continue;
 				if(closest==null)closest = roomB;
-				
+
 				if(room.manhattanDistToRoom(roomB) < room.manhattanDistToRoom(closest)) 
 				{
 					closest = roomB;
 				}
 			}
 		}
-		
-		
+
+
 		connRooms.add(rooms.random());
 		unconnRooms.removeAll(connRooms);
 		while(connRooms.size() < rooms.size) 
 		{
 			Room rA = (Room) connRooms.toArray()[MathUtils.random(connRooms.size()-1)];
 			Room rB = (Room) unconnRooms.toArray()[MathUtils.random(unconnRooms.size()-1)];
-			
+
 			connRooms.add(rB);
 			unconnRooms.remove(rB);
 			generatePathBetweenRooms(rA, rB);
 		}
-		
+
 		// Decorate the rooms
-		
+
 		Array<Tile> replaceableTiles = new Array<Tile>();
 		for(int i=0;i<MAP_SIZE;i++) 
 		{
@@ -121,6 +126,10 @@ public class TileMap
 		replaceableTiles.removeValue(rt, true);
 		spawnLoc.set(rt.bb.min.x,rt.bb.min.y);
 		addTile(new LadderTile(), rt.getI(), rt.getJ());
+
+		rt = replaceableTiles.random();
+		replaceableTiles.removeValue(rt, true);
+		addTile(new StairTile(), rt.getI(), rt.getJ());
 
 		int numChests = 5;
 		int numSpikes = 10;
@@ -149,8 +158,55 @@ public class TileMap
 				}
 			}
 		}
-		
-		
+		if(levelTheme==LevelTheme.OVERGROWN) 
+		{
+			int numPlants = 30;
+
+			for(int p = 0; p < numPlants; p++) 
+			{
+				rt = replaceableTiles.random();
+				if(rt!=null) 
+				{
+					replaceableTiles.removeValue(rt, true);
+					for(Tile t : getSurroundingTiles(rt.getI(), rt.getJ(), true, MathUtils.random(1, 4))) 
+					{
+						if(t instanceof FloorTile && MathUtils.randomBoolean(0.125f)) 
+						{
+							addTile(new PlantTile(), t.getI(), t.getJ());	
+							replaceableTiles.removeValue(t, true);
+						}
+					}
+				}
+			}
+		}
+
+		if(levelTheme==LevelTheme.HOT) 
+		{
+			int numLavaPools = 10;
+
+			for(int p = 0; p < numLavaPools; p++) 
+			{
+				rt = replaceableTiles.random();
+				if(rt!=null) 
+				{
+					replaceableTiles.removeValue(rt, true);
+					for(Tile t : getSurroundingTiles(rt.getI(), rt.getJ(), true, MathUtils.random(1, 4))) 
+					{
+						// Ensure you do not block off an entrance
+						if(replaceableTiles.contains(t, false)) 
+						{
+							if(t instanceof FloorTile && MathUtils.randomBoolean(0.9f)) 
+							{
+								addTile(new LavaTile(), t.getI(), t.getJ());	
+								replaceableTiles.removeValue(t, true);
+							}
+						}
+					}
+				}
+			}
+		}
+
+
 
 		// Trim all the walls
 		for(int i=0;i<MAP_SIZE;i++) 
