@@ -4,7 +4,9 @@ import java.util.function.Predicate;
 
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
+import com.badlogic.gdx.graphics.GL30;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Pixmap.Format;
 import com.badlogic.gdx.graphics.Texture;
@@ -16,13 +18,11 @@ import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
-import com.badlogic.gdx.utils.viewport.StretchViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 
 import finalforeach.ld47.entities.Entity;
 import finalforeach.ld47.entities.ItemEntity;
 import finalforeach.ld47.entities.Player;
-import finalforeach.ld47.tiles.DebugTile;
 import finalforeach.ld47.tiles.IUpdateDelta;
 import finalforeach.ld47.tiles.LevelTheme;
 import finalforeach.ld47.tiles.Tile;
@@ -47,6 +47,7 @@ public class Game extends ApplicationAdapter
 	private InputHandler inputHandler;
 	private static Texture blankTex;
 	private static Texture fovTex;
+	private static Texture glowTileTex;
 	
 	public static Player player;
 
@@ -60,6 +61,7 @@ public class Game extends ApplicationAdapter
 		Entity.load();
 		blankTex = new Texture("blankTex.png");
 		fovTex = new Texture("FOV.png");
+		glowTileTex = new Texture("glowTile.png");
 
 		camera = new OrthographicCamera();
 		viewport = new ScreenViewport(camera);
@@ -140,20 +142,6 @@ public class Game extends ApplicationAdapter
 
 		});
 
-		viewport.apply();
-		camera.position.set(player.bb.getCenterX(),player.bb.getCenterY(),0);
-		camera.update();
-
-		Gdx.gl.glClearColor(0, 0, 0, 1);
-		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
-		batch.setBlendFunction( GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
-		batch.setProjectionMatrix(camera.combined);
-		batch.begin();
-		
-		tileMap.draw(batch);
-		Entity.drawAllEntities(batch);
-				
-		batch.end();
 		
 		// Post processing
 	    float width = Gdx.graphics.getWidth();
@@ -168,18 +156,26 @@ public class Game extends ApplicationAdapter
         }
         
         postProcessingFBO.begin();
-		//Gdx.gl.glClearColor(0, 0, 0, 0.001f);
-		//Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
+
+		viewport.apply();
+		camera.position.set(player.bb.getCenterX(),player.bb.getCenterY(),0);
+		camera.update();
 
 		// Lights
+		//batch.setBlendFunction(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
 		batch.setBlendFunction(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
-        batch.begin();
+		batch.setProjectionMatrix(camera.combined);
+		
 
-        batch.setColor(0, 0, 0, 1);
-        batch.draw(blankTex, -10000,-10000,100000,100000);
+		Gdx.gl.glClearColor(0, 0, 0, 0);
+		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
+		batch.setBlendFunctionSeparate(GL20.GL_SRC_ALPHA, GL20.GL_DST_ALPHA, GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
+
+		Gdx.gl.glBlendEquationSeparate(GL30.GL_FUNC_ADD,GL30.GL_FUNC_ADD);
+        batch.begin();
         // FOV sphere
         float fovRadius = 128;
-        batch.setColor(1, 1, 1, 1);
+        batch.setColor(1,1,1,1);
         batch.draw(fovTex, player.bb.getCenterX()-fovRadius, player.bb.getCenterY()-fovRadius,fovRadius*2,fovRadius*2);
         for(Entity e : Entity.entities) 
         {
@@ -191,15 +187,53 @@ public class Game extends ApplicationAdapter
         	}
         }
         
+        for(int i=0;i<TileMap.MAP_SIZE;i++) 
+        {
+        	for(int j=0;j<TileMap.MAP_SIZE;j++) 
+            {
+            	Tile t = tileMap.getTile(i, j);
+            	if(t!=null) 
+            	{
+            		Color glow = t.getGlowColor();
+            		if(glow!=null) 
+            		{
+            			batch.setColor(t.getGlowColor());
+            			float glowRadius = 128;
+            			batch.draw(fovTex, t.bb.getCenterX()-glowRadius, t.bb.getCenterY()-glowRadius,glowRadius*2,glowRadius*2);
+            		}
+            	}
+            }
+        }
+        
         batch.setColor(1, 1, 1, 1);
         batch.end();
-	    
-		// Finish post processing
+
+		Gdx.gl.glBlendEquationSeparate(GL30.GL_FUNC_ADD,GL30.GL_FUNC_ADD);
+		
 	    
         postProcessingFBO.end();
 
+        Gdx.gl.glBlendEquation(GL30.GL_FUNC_ADD);
 		
+        // Main drawing
+
+		viewport.apply();
+		camera.position.set(player.bb.getCenterX(),player.bb.getCenterY(),0);
+		camera.update();
+
+		Gdx.gl.glClearColor(0, 0, 0, 1);
+		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
+		batch.setBlendFunction(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
+		batch.setProjectionMatrix(camera.combined);
+		batch.begin();
 		
+		tileMap.draw(batch);
+		Entity.drawAllEntities(batch);
+				
+		batch.end();
+        
+
+		// Finish post processing
         viewport.apply();
 		camera.update();
 		batchPostProcessing.setBlendFunction( GL20.GL_DST_COLOR, GL20.GL_ONE_MINUS_SRC_ALPHA);
@@ -222,6 +256,8 @@ public class Game extends ApplicationAdapter
 		// UI
         uiViewport.apply();
 		uiCamera.update();
+
+		batch.setBlendFunction(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
 		batch.setProjectionMatrix(uiCamera.combined);
 		batch.begin();
 		// Empty hearts
@@ -281,7 +317,7 @@ public class Game extends ApplicationAdapter
 			+ "void main()\n"//
 			+ "{\n" //
 			+ "  vec4 lightColor = v_color * texture2D(u_texture, v_texCoords);\n"
-			+ "  gl_FragColor.xyzw = lightColor.xzyw;\n" //
+			+ "  gl_FragColor.xyzw = lightColor.xyzw;\n" //
 			//+ "  gl_FragColor.a = length(lightColor.xzy) / length(vec3(1));\n"
 			+ "}";
 
@@ -296,6 +332,7 @@ public class Game extends ApplicationAdapter
 		Entity.dispose();
 		blankTex.dispose();
 		fovTex.dispose();
+		glowTileTex.dispose();
 	}
 	public static void nextLevel() {
 		Entity.entities.clear();

@@ -1,5 +1,6 @@
 package finalforeach.ld47.tiles;
 
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
@@ -62,5 +63,9 @@ public abstract class Tile
 	public void onStandUpdate(Entity entity, double deltaTime) {
 		
 	}
-
+	public Color glowColor;
+	public Color getGlowColor() 
+	{
+		return glowColor;
+	}
 }
