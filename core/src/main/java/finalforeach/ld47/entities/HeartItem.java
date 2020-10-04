@@ -1,5 +1,6 @@
 package finalforeach.ld47.entities;
 
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 
 
@@ -9,6 +10,7 @@ public class HeartItem extends ItemEntity
 	{
 		super(x, y);
 		texReg = new TextureRegion(tex, 0, 16, 16, 16);
+		glowColor = new Color(1,0,0,1);
 	}
 	public HeartItem() 
 	{

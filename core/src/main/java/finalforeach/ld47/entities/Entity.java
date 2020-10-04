@@ -1,5 +1,6 @@
 package finalforeach.ld47.entities;
 
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
@@ -215,5 +216,13 @@ public class Entity
 
 	public double getMaxHP() {
 		return maxHP;
+	}
+	public Color glowColor = new Color();
+	public Color getGlowColor() {
+		return glowColor;
+	}
+
+	public float getGlowRadius() {
+		return 0;
 	}
 }

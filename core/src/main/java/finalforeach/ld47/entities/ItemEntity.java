@@ -1,5 +1,6 @@
 package finalforeach.ld47.entities;
 
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.math.MathUtils;
 
 public class ItemEntity extends Entity
@@ -11,9 +12,10 @@ public class ItemEntity extends Entity
 	{
 		super(x, y, 16, 16);
 		anchorY = y;
+		glowColor = new Color(1,1,1,1);
 	}
 	public ItemEntity() {
-		super(0, 0, 16, 16);
+		this(0, 0);
 	}
 	@Override
 	public void update(double deltaTime) 
@@ -21,7 +23,7 @@ public class ItemEntity extends Entity
 		super.update(deltaTime);
 		timer+=deltaTime;
 		y = 4*MathUtils.sin(timer) + anchorY;
-		System.out.println(this.getClass().getSimpleName()+" y:" + y);
+		updateBoundingBox();
 	}
 	@Override
 	public void onIntersect(Entity entityB) {
@@ -37,5 +39,9 @@ public class ItemEntity extends Entity
 	public boolean pickupItem(Player player) 
 	{
 		return true;
+	}
+	@Override
+	public float getGlowRadius() {
+		return 32;
 	}
 }
