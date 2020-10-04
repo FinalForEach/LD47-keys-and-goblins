@@ -25,8 +25,8 @@ configure(subprojects) {
 }
 
 subprojects {
-	version = '0.0.1-SNAPSHOT'
-	ext.appName = 'LD47'
+	version = '1.0'
+	ext.appName = 'LD47-keys-and-goblins'
 	repositories {
 		mavenLocal()
 		mavenCentral()

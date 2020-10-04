@@ -62,4 +62,8 @@ public class StrikeEntity extends Entity
 			hitSound.play();
 		}
 	}
+	@Override
+	public boolean canHit() {
+		return false;
+	}
 }
