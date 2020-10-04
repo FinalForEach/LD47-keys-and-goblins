@@ -7,18 +7,17 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.badlogic.gdx.math.MathUtils;
-import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 
 import finalforeach.ld47.entities.Entity;
+import finalforeach.ld47.entities.ItemEntity;
 import finalforeach.ld47.entities.Player;
 import finalforeach.ld47.tiles.IUpdateDelta;
+import finalforeach.ld47.tiles.LevelTheme;
 import finalforeach.ld47.tiles.Tile;
 import finalforeach.ld47.tiles.TileMap;
-import finalforeach.ld47.tiles.TileMap.LevelTheme;
 
 /** {@link com.badlogic.gdx.ApplicationListener} implementation shared by all platforms. */
 public class Game extends ApplicationAdapter 
@@ -41,7 +40,6 @@ public class Game extends ApplicationAdapter
 		batchDebug = new SpriteBatch();
 		Tile.load();
 		Entity.load();
-		tileMap = new TileMap();
 
 		camera = new OrthographicCamera();
 		viewport = new FitViewport(1280, 786, camera);
@@ -59,10 +57,17 @@ public class Game extends ApplicationAdapter
 		
 		inputHandler = new InputHandler();
 		Gdx.input.setInputProcessor(inputHandler);
+
+		restart();
 		
+	}
+	public void restart() 
+	{
+
+		tileMap = new TileMap();
 		player = new Player(tileMap.spawnLoc.x,tileMap.spawnLoc.y);
+		Entity.entities.clear();
 		Entity.entities.add(player);
-		
 	}
 	@Override
 	public void resize(int width, int height) {
@@ -124,6 +129,13 @@ public class Game extends ApplicationAdapter
 		uiCamera.update();
 		batch.setProjectionMatrix(uiCamera.combined);
 		batch.begin();
+		// Empty hearts
+
+		for(int i=0; i< player.getMaxHP(); i++) 
+		{
+			batch.draw(Entity.tex, 2 + (i*1.05f)*64, -64, 
+					64, 64, 32, 16, 16, 16, false, false);
+		}
 		// Full hearts
 		for(int i=0; i< player.getHP(); i++) 
 		{
@@ -135,6 +147,12 @@ public class Game extends ApplicationAdapter
 			// Half heart
 			batch.draw(Entity.tex, 2 + (((int) player.getHP())*1.05f)*64, -64, 
 					64, 64, 16, 16, 16, 16, false, false);	
+		}
+		
+		for(int i=0; i<player.inventory.size;i++) 
+		{
+			ItemEntity item = player.inventory.get(i);
+			batch.draw(item.texReg, 0, -128-(i*16), 8, 8, 64, 64, 1, 1, 0);
 		}
 		
 		batch.end();

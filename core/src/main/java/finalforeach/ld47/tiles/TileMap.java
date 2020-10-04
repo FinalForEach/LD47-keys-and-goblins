@@ -10,14 +10,13 @@ import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Array;
 
+import finalforeach.ld47.entities.HeartItem;
+import finalforeach.ld47.entities.KeyItem;
+
 public class TileMap
 {
 	public static final int MAP_SIZE = 128;
 	Tile[][] tiles = new Tile[MAP_SIZE][MAP_SIZE];
-	public enum LevelTheme
-	{
-		NORMAL, OVERGROWN, HOT
-	}
 	public LevelTheme levelTheme = LevelTheme.NORMAL;
 	public Set<IUpdateDelta> updatingTiles;
 	public Vector2 spawnLoc;
@@ -139,7 +138,13 @@ public class TileMap
 			if(rt!=null) 
 			{
 				replaceableTiles.removeValue(rt, true);
-				addTile(new ChestTile(), rt.getI(), rt.getJ());
+				if(i==0) 
+				{
+					addTile(new ChestTile(new KeyItem(levelTheme)), rt.getI(), rt.getJ());
+				}else 
+				{
+					addTile(new ChestTile(new HeartItem()), rt.getI(), rt.getJ());
+				}
 			}
 		}
 		for(int s = 0; s < numSpikes; s++) 

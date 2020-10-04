@@ -3,15 +3,17 @@ package finalforeach.ld47.tiles;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 
 import finalforeach.ld47.entities.Entity;
-import finalforeach.ld47.entities.HeartEntity;
+import finalforeach.ld47.entities.ItemEntity;
 
 public class ChestTile extends BasicTile
 {
 	TextureRegion openTexReg;
 	TextureRegion closedTexReg;
+	ItemEntity item;
 	boolean isOpen;
-	public ChestTile()
+	public ChestTile(ItemEntity item)
 	{
+		this.item = item;
 		closedTexReg = new TextureRegion(tex,80,0,16,16);
 		openTexReg = new TextureRegion(tex,96,0,16,16);
 		
@@ -22,7 +24,11 @@ public class ChestTile extends BasicTile
 	{
 		if(!isOpen) 
 		{
-			Entity.entities.add(new HeartEntity(i*16, j*16 + 8));	
+			item.x = i * 16;
+			item.anchorY = j * 16 + 8;
+			item.updateBoundingBox();
+			Entity.entities.add(item);
+			System.out.println("Spawned " + item + " @ " + item.x + ", " + item.y);
 		}
 		isOpen = true;
 		texReg = openTexReg;

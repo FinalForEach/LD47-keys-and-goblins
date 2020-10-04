@@ -177,6 +177,11 @@ public class Entity
 	}
 	public void draw(SpriteBatch batch) 
 	{
+		draw(batch, x, y);
+	}
+
+	public void draw(SpriteBatch batch, float x, float y) 
+	{
 		float epsilon = 0.0001f;
 		float u = texReg.getU()+epsilon;
 		float v = texReg.getV()+epsilon;
